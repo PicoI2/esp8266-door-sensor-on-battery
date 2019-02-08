@@ -12,6 +12,7 @@ class CServer : public ESP8266WebServer {
     void handleRoot();
     void handleConfig();
     void handleReset();
+    void handleState();
     void handleNotFound();
 
     bool mbStarted = false;

@@ -6,6 +6,8 @@ const char INDEX_HTML[] PROGMEM = R"=====(<!DOCTYPE html>
 <meta name = "viewport" content="width=device-width">
 </head>
 <body>
-<h1>Welcome to easy config</h1>
+<a href="/state">State</a><br>
+<a href="/config">Configuration</a><br>
+<a href="/reset">Reset</a><br>
 </body>
 </html>)=====";

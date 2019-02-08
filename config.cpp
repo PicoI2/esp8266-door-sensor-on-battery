@@ -22,35 +22,34 @@ SCommand CommandList[] = {
 };
 #define COMMAND_NB (sizeof(CommandList) / sizeof(SCommand))
 
-extern const char* version;
-extern const char* wifi_ssid;
-extern const char* wifi_pwd;
-extern const char* url_low_state;
-extern const char* url_high_state;
-extern const char* sleep_duration;
-
 const char* version = "Version";
 const char* wifi_ssid = "WiFi SSID";
 const char* wifi_pwd = "WiFi password";
+const char* use_dhcp = "Use DHCP (slower)";
+const char* static_ip_address = "Static ip address";
+const char* static_ip_gateway = "Static ip gateway";
+const char* static_ip_subnet = "Static ip subnet";
 const char* url_low_state = "Low state URL";
 const char* url_high_state = "High state URL";
 const char* sleep_duration = "Sleep duration in minutes, 0=infinite";
 
-#define VERSION 1   // Increment me when modifying ParamList
+#define VERSION 2   // Increment me when modifying ParamList
+#define STR(s)  #s
+#define XSTR(s) STR(s)
+
 CParam* ParamList[] = {
     new CParamByte(version),    // First param must be version
     new CParamString(wifi_ssid),
     new CParamString(wifi_pwd),
+    new CParamBool(use_dhcp),
+    new CParamString(static_ip_address),
+    new CParamString(static_ip_gateway),
+    new CParamString(static_ip_subnet),
     new CParamString(url_low_state),
     new CParamString(url_high_state),
     new CParamByte(sleep_duration),
 };
 #define PARAM_NB (sizeof(ParamList) / sizeof(ParamList[0]))
-
-// Constructor
-CConfig::CConfig(void)
-{
-}
 
 // Read config from eeprom
 void CConfig::read(void)
@@ -62,13 +61,19 @@ void CConfig::read(void)
     }
     EEPROM.end();
 
-    if (255 == getParamByteValue(version)) {
-        Serial.println("First startup, writing default value");
-        setParamValue(version, "1");
+    if (VERSION != getParamByteValue(version)) {
+        Serial.print("New version ");
+        Serial.println(XSTR(VERSION));
+        Serial.println("Set parameter to default value");
+        setParamValue(version, XSTR(VERSION));
         setParamValue(wifi_ssid, "fill me");
         setParamValue(wifi_pwd, "fill me");
-        setParamValue(url_low_state, "http://192.168.0.1/blablabla");
-        setParamValue(url_high_state, "http://192.168.0.1/blablabla");
+        setParamValue(use_dhcp, "1");
+        setParamValue(static_ip_address, "192.168.0.12");
+        setParamValue(static_ip_gateway, "192.168.0.1");
+        setParamValue(static_ip_subnet, "255.255.255.0");
+        setParamValue(url_low_state, "http://192.168.0.1/low");
+        setParamValue(url_high_state, "http://192.168.0.1/high");
         setParamValue(sleep_duration, "60");
     }
 }

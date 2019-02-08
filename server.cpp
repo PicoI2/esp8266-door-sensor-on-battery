@@ -7,8 +7,9 @@ CServer Server;
 void CServer::start()
 {
     on("/", [this]() { handleRoot(); });
-    on("/config", [this]() { handleConfig(); });   // POST Request
-    on("/reset", [this]() { handleReset(); });     // http://192.168.0.2/relay?state=on&time=2000
+    on("/config", [this]() { handleConfig(); });
+    on("/reset", [this]() { handleReset(); });
+    on("/state", [this]() { handleState(); });
     onNotFound([this]() { handleNotFound(); });
     begin();
 }
@@ -20,18 +21,18 @@ void CServer::handleRoot()
 
 void CServer::handleNotFound()
 {
-    String message = "File Not Found\n\n";
-    message += "URI: ";
-    message += uri();
-    message += "\nMethod: ";
-    message += (method() == HTTP_GET) ? "GET" : "POST";
-    message += "\nArguments: ";
-    message += args();
-    message += "\n";
+    String response = "File Not Found\n\n";
+    response += "URI: ";
+    response += uri();
+    response += "\nMethod: ";
+    response += (method() == HTTP_GET) ? "GET" : "POST";
+    response += "\nArguments: ";
+    response += args();
+    response += "\n";
     for (uint8_t i = 0; i < args(); i++) {
-        message += " " + argName(i) + ": " + arg(i) + "\n";
+        response += " " + argName(i) + ": " + arg(i) + "\n";
     }
-    send(404, "text/plain", message);
+    send(404, "text/plain", response);
 }
 
 void CServer::handleConfig()
@@ -41,37 +42,49 @@ void CServer::handleConfig()
         Config.save();
     }
 
-    String message = "\
+    String response = "\
 <!DOCTYPE HTML>\
 <html lang='fr'>\
 <head>\
-  <title>Easy config</title>\
-  <meta charset='utf-8'>\
+    <title>ESP8266 Door sensor on battery</title>\
+    <meta charset='utf-8'>\
 </head>\
 <body >\
-  <h3>Configuration</h3>\
-  <form method='post'>";
-    message += Config.getParamsForm();
-    message += "<input type='submit' value='Submit'>\
-  </form><br>";
+    <h3>Configuration</h3>\
+    <form method='post'>";
+        response += Config.getParamsForm();
+        response += "<input type='submit' value='Submit'>\
+    </form>\
+    </body>\
+</html>";
+    send(200, "text/html", response);
+}
 
-    message += "URI: ";
-    message += uri();
-    message += "\nMethod: ";
-    message += (method() == HTTP_GET) ? "GET" : "POST";
-    message += "\nArguments: ";
-    message += args();
-    message += "\n";
-    message += "</body>\
+void CServer::handleState()
+{
+    int DoorState = digitalRead(14);
+
+    String response = "\
+<!DOCTYPE HTML>\
+<html lang='fr'>\
+<head>\
+    <title>ESP8266 Door sensor on battery</title>\
+    <meta charset='utf-8'>\
+</head>\
+<body >\
+    <h3>State: ";
+    response += DoorState;
+    response += "</h3>\
+</body>\
 </html>";
 
-    send(200, "text/html", message);
+    send(200, "text/html", response);
 }
 
 void CServer::handleReset()
 {
     Serial.println("reboot from http server");
-    send(200, "text/html", "OK");
+    send(200, "text/html", "Reset OK");
     ESP.reset();
 }
 

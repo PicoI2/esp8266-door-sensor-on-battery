@@ -4,7 +4,6 @@
 
 class CConfig {
   public:
-    CConfig();
     String getParamValue(const char* aName);
     byte getParamByteValue(const char* aName);
     void setParamValue(const char* aName, String aValue);
@@ -27,6 +26,10 @@ extern CConfig Config;
 extern const char* version;
 extern const char* wifi_ssid;
 extern const char* wifi_pwd;
+extern const char* use_dhcp;
+extern const char* static_ip_address;
+extern const char* static_ip_gateway;
+extern const char* static_ip_subnet;
 extern const char* url_low_state;
 extern const char* url_high_state;
 extern const char* sleep_duration;

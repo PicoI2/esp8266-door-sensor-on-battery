@@ -19,11 +19,26 @@ void setup(void)
     // To enable WiFi
     WiFi.mode(WIFI_OFF);
     WiFi.mode(WIFI_STA);
+
+    // If no DHCP
+    if (0 == Config.getParamByteValue(use_dhcp)) {
+        IPAddress ip, gateway, subnet;
+        bool bRes = ip.fromString(Config.getParamValue(static_ip_address));
+        bRes &= gateway.fromString(Config.getParamValue(static_ip_gateway));
+        bRes &= subnet.fromString(Config.getParamValue(static_ip_subnet));
+        if (bRes) {
+            WiFi.config(ip, gateway, subnet);
+        }
+        else {
+            Serial.println("Error while reading static IP parameters, using DHCP instead");
+        }
+    }
+
     WiFi.begin(Config.getParamValue(wifi_ssid).c_str(), Config.getParamValue(wifi_pwd).c_str());
 
     // Wait 5s max for WiFi
     for (int i=0; WL_CONNECTED != WiFi.status() && i<50; ++i) {
-        Serial.println("Wait for WiFi");  
+        Serial.println("Wait for WiFi");
         delay(100);
     }
 
@@ -67,13 +82,13 @@ void loop(void)
 
     Input0State = digitalRead(0);
     if (HIGH == Input0State) {
-        uint64_t SleepDuration = Config.getParamByteValue(sleep_duration) * 60 * 1000000;   // us
+        uint64_t SleepDuration = (uint64_t)Config.getParamByteValue(sleep_duration) * 60 * 1000000;   // us
         if (0 == SleepDuration || SleepDuration >= ESP.deepSleepMax()) {
             SleepDuration = ESP.deepSleepMax();
         }
         Serial.print("I'm going to sleep for ");
-        Serial.print((unsigned long)(SleepDuration / 60000000));
-        Serial.print(" minutes");
+        Serial.print((unsigned short)(SleepDuration / 60000000));
+        Serial.println(" minutes");
         ESP.deepSleep(SleepDuration);
     }
 }
